@@ -1,0 +1,258 @@
+:root {
+    --bg-color: #05070a;
+    --text-color: #ffffff;
+    --accent-blue: #00f2ff;
+    --accent-purple: #7000ff;
+    --font-main: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    /* Global Ambient Glow */
+    box-shadow: inset 0 0 150px rgba(0, 242, 255, 0.08);
+    min-height: 100vh;
+}
+
+/* Supplemental Ambient Glow Overlay */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 242, 255, 0.03) 100%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.2;
+}
+
+.visual-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    /* 3D Perspective Context */
+    perspective: 1000px;
+    perspective-origin: 50% 50%;
+}
+
+.layer-3d {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+
+/* 3D Glass Morphism Effect */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.narrative-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    overflow: visible;
+}
+
+/* Narrative Elements */
+.chip-rect {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 10px var(--accent-blue));
+}
+
+.chip-text {
+    fill: var(--accent-blue);
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.narrative-line {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 1;
+    opacity: 0.4;
+}
+
+.node-square {
+    fill: var(--accent-blue);
+    opacity: 0;
+    filter: drop-shadow(0 0 5px var(--accent-blue));
+}
+
+/* Bot Card Styling */
+.bot-card-bg {
+    fill: rgba(10, 15, 25, 0.95);
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 30px rgba(0, 242, 255, 0.3));
+}
+
+.bot-eye {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+}
+
+.bot-pupil {
+    fill: var(--accent-blue);
+    filter: drop-shadow(0 0 10px var(--accent-blue));
+}
+
+.bot-mouth {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+#card-inner-scan {
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+    opacity: 0.3;
+}
+
+.building-outline {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+    opacity: 0;
+    stroke-dasharray: 1500;
+    stroke-dashoffset: 1500;
+}
+
+.scanner-line {
+    fill: var(--accent-blue);
+    opacity: 0;
+    filter: drop-shadow(0 0 18px var(--accent-blue)) drop-shadow(0 0 5px #fff);
+}
+
+.report-base {
+    fill: rgba(255, 255, 255, 0.03);
+    stroke: var(--accent-blue);
+    stroke-width: 1;
+    filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.1));
+}
+
+.report-item {
+    fill: var(--accent-blue);
+    opacity: 0.6;
+}
+
+/* Pie Chart */
+.pie-bg {
+    fill: rgba(0, 242, 255, 0.1);
+}
+
+.pie-slice {
+    fill: none;
+    stroke: var(--accent-blue);
+    stroke-width: 8;
+    stroke-dasharray: 251.2;
+    stroke-dashoffset: 251.2;
+    transform: rotate(-90deg);
+}
+
+/* ML Pipeline & Workflow */
+.pipeline-node {
+    fill: #05070a;
+    stroke: var(--accent-blue);
+    stroke-width: 2;
+}
+
+.pipeline-link {
+    stroke: var(--accent-blue);
+    stroke-width: 1.5;
+    opacity: 0.4;
+    stroke-dasharray: 5, 5;
+}
+
+.workflow-icon {
+    fill: var(--accent-blue);
+    filter: drop-shadow(0 0 5px var(--accent-blue));
+}
+
+.workflow-label {
+    fill: #fff;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Logo Payoff */
+#logo-payoff {
+    position: absolute;
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.final-brand-logo {
+    width: 300px;
+    filter: brightness(0) invert(1);
+    /* Ensure the logo is pure white */
+}
+
+/* Story Content */
+.story-section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-left: 8%;
+    padding-right: 50%;
+}
+
+.story-text {
+    max-width: 400px;
+    background: rgba(5, 7, 10, 0.7);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    border-left: 4px solid var(--accent-blue);
+    opacity: 1;
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
+}
+
+p {
+    line-height: 1.5;
+    color: #cbd5e1;
+}
+
+.final-reveal {
+    text-align: center;
+    margin: 0 auto;
+    border: none;
+    background: none;
+}
+
+.final-reveal h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
