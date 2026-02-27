@@ -12,15 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/darkroomengineering/lenis@1.0.19/bundled/lenis.min.js"></script>
-    <!-- Three.js & Post-Processing (Modern ES Modules) -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
 </head>
 
 <body>
@@ -30,78 +21,74 @@
         <div class="visual-canvas">
             <div class="visual-wrapper" id="master-stage">
 
-                <!-- Layer 1: AI Chip -->
-                <div class="layer-3d" id="layer-chip">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="chip-group" class="narrative-element">
-                            <rect x="450" y="350" width="100" height="100" class="chip-rect" />
-                            <text x="500" y="410" text-anchor="middle" class="chip-text">AI</text>
+                <!-- Main Narrative Stage (SVG for lines/grids/building) -->
+                <svg class="narrative-svg" viewBox="0 0 1000 800">
+                    <!-- 1. AI Chip Representation (Central square) -->
+                    <g id="chip-group" class="narrative-element">
+                        <rect x="450" y="350" width="100" height="100" class="chip-rect" />
+                        <text x="500" y="410" text-anchor="middle" class="chip-text">AI</text>
+                    </g>
+
+                    <!-- 2. Growth Lines (Messy & Grid) -->
+                    <g id="line-system" class="narrative-element"></g>
+
+                    <!-- Extra Grid Layers -->
+                    <g id="grid-layer-1" class="narrative-element" opacity="0"></g>
+                    <g id="grid-layer-2" class="narrative-element" opacity="0"></g>
+                    <g id="grid-layer-3" class="narrative-element" opacity="0"></g>
+                    <g id="grid-layer-4" class="narrative-element" opacity="0"></g>
+
+                    <!-- 3. Intersection Nodes -->
+                    <g id="node-system" class="narrative-element"></g>
+
+                    <!-- 4. AI Bot Card (The Agent Face) -->
+                    <g id="bot-card" class="narrative-element" opacity="0">
+                        <rect x="350" y="250" width="300" height="300" class="bot-card-bg" rx="20" />
+                        <!-- Robot Eyes -->
+                        <circle cx="420" cy="380" r="15" class="bot-eye" />
+                        <circle cx="580" cy="380" r="15" class="bot-eye" />
+                        <circle cx="420" cy="380" r="5" class="bot-pupil" />
+                        <circle cx="580" cy="380" r="5" class="bot-pupil" />
+                        <!-- Robot Mouth -->
+                        <path d="M450,450 Q500,480 550,450" class="bot-mouth" />
+                        <!-- Scanning line inside the card -->
+                        <line x1="370" y1="400" x2="630" y2="400" id="card-inner-scan" />
+                    </g>
+
+                    <!-- 5. Business Building (Corporate Collection) -->
+                    <g id="building-group" class="narrative-element">
+                        <!-- Left Tower -->
+                        <path class="building-outline" d="M250,600 L250,350 L350,350 L350,600 Z" />
+                        <!-- Center Tower (Tallest) -->
+                        <path class="building-outline" d="M400,600 L400,250 L550,250 L550,600 Z" />
+                        <!-- Right Tower -->
+                        <path class="building-outline" d="M600,600 L600,400 L750,400 L750,600 Z" />
+                        <g id="building-windows"></g>
+                    </g>
+
+                    <!-- 5. Scanner Beam -->
+                    <rect id="scanner-beam" x="0" y="0" width="1000" height="10" class="scanner-line" />
+
+                    <!-- 6. Generated Reports/Dashboards -->
+                    <g id="report-group" class="narrative-element" opacity="0">
+                        <rect x="300" y="200" width="400" height="400" class="report-base" rx="20" />
+
+                        <!-- Top Section: Pie & Bars -->
+                        <g id="report-pie" transform="translate(420, 320) scale(0)">
+                            <circle cx="0" cy="0" r="45" class="pie-bg" />
+                            <circle cx="0" cy="0" r="45" class="pie-slice" id="slice-1" />
+                            <text x="0" y="5" text-anchor="middle" class="workflow-label"
+                                style="font-size: 14px;">84%</text>
                         </g>
-                    </svg>
-                </div>
+                        <g id="report-bars"></g>
 
-                <!-- Layer 2: Growth Lines & Grids -->
-                <div class="layer-3d" id="layer-lines">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="line-system" class="narrative-element"></g>
-                        <g id="node-system" class="narrative-element"></g>
-                    </svg>
-                </div>
+                        <!-- Middle Section: ML Pipeline -->
+                        <g id="ml-pipeline" transform="translate(340, 440)"></g>
 
-                <!-- Layer 3: Extra Grids (Depth offsets) -->
-                <div class="layer-3d" id="layer-extra-grids">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="grid-layer-1" class="narrative-element" opacity="0"></g>
-                        <g id="grid-layer-2" class="narrative-element" opacity="0"></g>
-                        <g id="grid-layer-3" class="narrative-element" opacity="0"></g>
-                        <g id="grid-layer-4" class="narrative-element" opacity="0"></g>
-                    </svg>
-                </div>
-
-                <!-- Layer 4: AI Agent Face -->
-                <div class="layer-3d" id="layer-agent">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="bot-card" class="narrative-element" opacity="0">
-                            <rect x="350" y="250" width="300" height="300" class="bot-card-bg" rx="20" />
-                            <circle cx="420" cy="380" r="15" class="bot-eye" />
-                            <circle cx="580" cy="380" r="15" class="bot-eye" />
-                            <circle cx="420" cy="380" r="5" class="bot-pupil" />
-                            <circle cx="580" cy="380" r="5" class="bot-pupil" />
-                            <path d="M450,450 Q500,480 550,450" class="bot-mouth" />
-                        </g>
-                    </svg>
-                </div>
-
-                <!-- Layer 5: Building & Scanner -->
-                <div class="layer-3d" id="layer-building">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="building-group" class="narrative-element">
-                            <path class="building-outline" d="M250,600 L250,350 L350,350 L350,600 Z" />
-                            <path class="building-outline" d="M400,600 L400,250 L550,250 L550,600 Z" />
-                            <path class="building-outline" d="M600,600 L600,400 L750,400 L750,600 Z" />
-                            <g id="building-windows"></g>
-                        </g>
-                        <rect id="scanner-beam" x="0" y="0" width="1000" height="10" class="scanner-line" />
-                    </svg>
-                </div>
-
-                <!-- Layer 6: Reports/Dashboard -->
-                <div class="layer-3d" id="layer-reports">
-                    <svg class="narrative-svg" viewBox="0 0 1000 800">
-                        <g id="report-group" class="narrative-element" opacity="0">
-                            <rect x="300" y="200" width="400" height="400" class="report-base" rx="20" />
-                            <g id="report-pie" transform="translate(420, 320) scale(0)">
-                                <circle cx="0" cy="0" r="45" class="pie-bg" />
-                                <circle cx="0" cy="0" r="45" class="pie-slice" id="slice-1" />
-                                <text x="0" y="5" text-anchor="middle" class="workflow-label"
-                                    style="font-size: 14px;">84%</text>
-                            </g>
-                            <g id="report-bars"></g>
-                            <g id="ml-pipeline" transform="translate(340, 440)"></g>
-                            <g id="workflow-icons" transform="translate(340, 540)"></g>
-                        </g>
-                    </svg>
-                </div>
+                        <!-- Bottom Section: Workflow Symbols -->
+                        <g id="workflow-icons" transform="translate(340, 540)"></g>
+                    </g>
+                </svg>
 
                 <!-- Final Logo Container -->
                 <div id="logo-payoff" class="scene-visual">
@@ -147,7 +134,7 @@
         </main>
     </div>
 
-    <script type="module" src="index.js"></script>
+    <script src="index.js"></script>
 </body>
 
 </html>

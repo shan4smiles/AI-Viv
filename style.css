@@ -47,28 +47,14 @@ body::after {
     height: 100vh;
     z-index: 1;
     pointer-events: none;
-    /* 3D Perspective Context */
-    perspective: 1000px;
-    perspective-origin: 50% 50%;
 }
 
-.layer-3d {
-    position: absolute;
+.visual-wrapper {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    transform-style: preserve-3d;
-    pointer-events: none;
-}
-
-/* 3D Glass Morphism Effect */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .narrative-svg {

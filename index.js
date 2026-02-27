@@ -1,9 +1,3 @@
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
 // Setup Lenis
 const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
 function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
@@ -11,64 +5,37 @@ requestAnimationFrame(raf);
 
 gsap.registerPlugin(ScrollTrigger);
 
-// --- Three.js Setup (Cinematic 3D Layer) ---
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({
-    canvas: document.getElementById('particle-canvas'),
-    antialias: true,
-    alpha: true
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Particle Canvas (Simplified background)
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
 
-// Post-Processing (Bloom)
-const renderScene = new RenderPass(scene, camera);
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-bloomPass.threshold = 0;
-bloomPass.strength = 1.2;
-bloomPass.radius = 0.5;
-
-const composer = new EffectComposer(renderer);
-composer.addPass(renderScene);
-composer.addPass(bloomPass);
-
-const outputPass = new OutputPass();
-composer.addPass(outputPass);
-
-// Neural Field (3D Background)
-const particlesCount = 2000;
-const positions = new Float32Array(particlesCount * 3);
-for (let i = 0; i < particlesCount * 3; i++) {
-    positions[i] = (Math.random() - 0.5) * 50;
+class Particle {
+    constructor() { this.init(); }
+    init() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2;
+        this.vx = Math.random() * 0.2 - 0.1;
+        this.vy = Math.random() * 0.2 - 0.1;
+    }
+    update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x > canvas.width) this.x = 0; if (this.y > canvas.height) this.y = 0;
+    }
+    draw() {
+        ctx.fillStyle = 'rgba(0, 242, 255, 0.2)';
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+    }
 }
-const geometry = new THREE.BufferGeometry();
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-const material = new THREE.PointsMaterial({
-    size: 0.05,
-    color: 0x00f2ff,
-    transparent: true,
-    opacity: 0.6,
-    blending: THREE.AdditiveBlending
-});
-const neuralField = new THREE.Points(geometry, material);
-scene.add(neuralField);
-
-camera.position.z = 10;
-
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
-}
-window.addEventListener('resize', onWindowResize);
-
+for (let i = 0; i < 100; i++) particles.push(new Particle());
 function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
     requestAnimationFrame(animate);
-    neuralField.rotation.y += 0.001;
-    neuralField.rotation.x += 0.0005;
-    composer.render();
 }
 animate();
 
@@ -236,14 +203,7 @@ function initNarrative() {
 }
 initNarrative();
 
-// --- 3D Layer Setup (Set initial states) ---
-gsap.set(".layer-3d", { transformPerspective: 1000 });
-gsap.set("#layer-chip", { z: 50 });
-gsap.set("#layer-lines", { z: 0 });
-gsap.set("#layer-agent", { z: -100 });
-gsap.set("#layer-building", { z: -200, rotationX: 10 });
-gsap.set("#layer-reports", { z: 50, rotationY: -15 });
-
+// --- Main GSAP Timeline ---
 // --- Main GSAP Timeline ---
 const masterTL = gsap.timeline({
     scrollTrigger: {
@@ -253,10 +213,16 @@ const masterTL = gsap.timeline({
 
 // TOTAL DURATION = 60 (for 6 sections)
 
+// --- NEW PART: Bring in extra grids from corners ---
+const corners = [
+    { x: -800, y: -600 }, // TL
+    { x: 800, y: -600 },  // TR
+    { x: -800, y: 600 },  // BL
+    { x: 800, y: 600 }   // BR
+];
+
 // Phase 1: Foundation (Section 1: 0-10)
 masterTL.addLabel("foundation", 0);
-masterTL.to(camera.position, { z: 5, duration: 10, ease: "power2.inOut" }, 0);
-masterTL.to("#layer-chip", { z: 300, rotationY: 45, duration: 8, ease: "power2.inOut" }, 1);
 masterTL.to(lines.slice(0, 3), {
     attr: {
         x1: 500, y1: 400,
@@ -268,9 +234,6 @@ masterTL.to(lines.slice(0, 3), {
 
 // Phase 2: Chaos (Section 2: 10-20)
 masterTL.addLabel("chaos", 10);
-masterTL.to(camera.position, { z: 20, x: 2, duration: 10, ease: "power1.inOut" }, 10);
-masterTL.to(neuralField.rotation, { y: Math.PI, duration: 10 }, 10);
-masterTL.to("#layer-chip", { opacity: 0, z: 600, duration: 4 }, 10);
 masterTL.to(lines, {
     attr: {
         x1: () => 300 + Math.random() * 400, y1: () => 200 + Math.random() * 400,
@@ -284,63 +247,58 @@ masterTL.to(lines, {
 
 // Phase 3: Structure (Section 3: 20-30)
 masterTL.addLabel("structure", 20);
-masterTL.to(camera.position, { z: 12, x: 0, y: 3, duration: 10, ease: "power2.inOut" }, 20);
-masterTL.to("#master-stage", { rotationX: 25, duration: 10 }, 20); // Tilt the world
-
-masterTL.to(lines.slice(0, 6), { attr: { x1: 350, y1: (i) => 250 + i * 60, x2: 650, y2: (i) => 250 + i * 60 }, duration: 3 }, 21);
-masterTL.to(lines.slice(6, 12), { attr: { x1: (i) => 350 + i * 60, y1: 250, x2: (i) => 350 + i * 60, y2: 550 }, duration: 3 }, 21);
-
+masterTL.to(lines.slice(0, 6), {
+    attr: { x1: 350, y1: (i) => 250 + i * 60, x2: 650, y2: (i) => 250 + i * 60 },
+    duration: 3
+}, 21);
+masterTL.to(lines.slice(6, 12), {
+    attr: { x1: (i) => 350 + i * 60, y1: 250, x2: (i) => 350 + i * 60, y2: 550 },
+    duration: 3
+}, 21);
 masterTL.to(lines.slice(12), { opacity: 0, duration: 1 }, 21);
 masterTL.to(nodes, { opacity: 0.8, stagger: 0.01, duration: 3 }, 24);
 
 extraGrids.forEach((grid, i) => {
     masterTL.fromTo(grid.container,
-        { x: corners[i].x, y: corners[i].y, opacity: 0, scale: 0.5, z: -500 },
-        { x: 0, y: 0, opacity: 0.5, scale: 1, z: 0, duration: 4, ease: "power2.out" },
+        { x: corners[i].x, y: corners[i].y, opacity: 0, scale: 0.5, rotation: 45 },
+        { x: 0, y: 0, opacity: 0.5, scale: 1, rotation: 0, duration: 4, ease: "power2.out" },
         24 + i * 0.5
     );
 });
 
 // Phase 4: Agent (Section 4: 30-40)
 masterTL.addLabel("agent", 30);
-masterTL.to(camera.position, { z: 15, y: 0, duration: 10 }, 30);
-masterTL.to("#master-stage", { rotationX: 0, duration: 10 }, 30);
-
-masterTL.to([nodes, lines.slice(0, 12), "#layer-lines", "#layer-extra-grids"], {
-    opacity: 0, scale: 0.8, z: -300, duration: 2, ease: "power2.inOut"
+masterTL.to([nodes, lines.slice(0, 12), "#line-system", "[id^='grid-layer-']", ".node-square", "#chip-group"], {
+    opacity: 0, scale: 0.8, duration: 2, ease: "power2.inOut"
 }, 31);
-masterTL.to("#bot-card", { opacity: 1, scale: 1, z: 200, duration: 2, ease: "power2.out" }, 32);
+masterTL.to("#bot-card", { opacity: 1, scale: 1, duration: 2, ease: "power2.out" }, 32);
 masterTL.from(".bot-eye, .bot-pupil, .bot-mouth", { opacity: 0, scale: 0.8, stagger: 0.2, duration: 2 }, 33);
 
 masterTL.to("#bot-card", { rotationX: 90, scaleY: 0.01, opacity: 0, duration: 1.5, ease: "power2.inOut" }, 36);
 masterTL.fromTo(".scanner-line", { opacity: 0, y: 200 }, { opacity: 1, y: 200, duration: 0.5 }, 37);
-masterTL.to("#building-group", { opacity: 1, z: 0, duration: 0.5 }, 37.5);
+masterTL.to("#building-group", { opacity: 1, duration: 0.5 }, 37.5);
 masterTL.to(".building-outline", { opacity: 1, strokeDashoffset: 0, stagger: 0.3, duration: 1.5, ease: "power2.inOut" }, 38);
 masterTL.to(".scanner-line", { y: 600, duration: 2, ease: "none" }, 38);
 masterTL.to(buildingWindows.children, { opacity: 0.8, stagger: { each: 0.01, from: "top" }, duration: 0.3 }, 39);
 
 // Phase 5: Value (Section 5: 40-50)
 masterTL.addLabel("value", 40);
-masterTL.to(camera.position, { x: -4, z: 12, duration: 10 }, 40);
 masterTL.to(".scanner-line", { opacity: 0, duration: 1 }, 41);
-masterTL.to("#layer-building", { opacity: 0, z: -400, duration: 1.5 }, 41);
-
-masterTL.fromTo("#report-group",
-    { x: 0, opacity: 0, scale: 0.8, rotationY: -45, z: -200 },
-    { x: 200, opacity: 1, scale: 1, rotationY: -15, z: 100, duration: 2 }, 42);
+masterTL.to("#building-group", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 41);
+// Shifted to the RIGHT (beside text)
+masterTL.fromTo("#report-group", { x: 0, opacity: 0, scale: 0.8 }, { x: 200, opacity: 1, scale: 1, duration: 2 }, 42);
 masterTL.to(".report-base", { opacity: 1, duration: 1 }, 43);
 
 masterTL.to(".report-item", { attr: { height: (i) => 20 + Math.random() * 60, y: (i) => 370 - (20 + Math.random() * 60) }, stagger: 0.1, duration: 2 }, 44);
-masterTL.to("#report-pie", { scale: 1, z: 50, duration: 1.5, ease: "back.out(1.7)" }, 45);
+masterTL.to("#report-pie", { scale: 1, duration: 1.5, ease: "back.out(1.7)" }, 45);
 masterTL.to(".pie-slice", { strokeDashoffset: 50, duration: 2, ease: "power2.inOut" }, 45);
-masterTL.to(".pipeline-node", { opacity: 1, scale: 1, z: 30, stagger: 0.1, duration: 1 }, 46);
+masterTL.to(".pipeline-node", { opacity: 1, scale: 1, stagger: 0.1, duration: 1 }, 46);
 masterTL.to(".pipeline-link", { opacity: 0.4, strokeDashoffset: 0, stagger: 0.1, duration: 1.5 }, 46);
 masterTL.to(".workflow-label", { opacity: 1, stagger: 0.05, duration: 1 }, 46);
-masterTL.to("#workflow-icons g", { opacity: 1, z: 20, stagger: 0.2, duration: 1.5 }, 47);
+masterTL.to("#workflow-icons g", { opacity: 1, stagger: 0.2, duration: 1.5 }, 47);
 
 // Phase 6: Logo Payoff (Section 6: 50-60)
 masterTL.addLabel("logo", 50);
-masterTL.to(camera.position, { x: 0, z: 30, duration: 10, ease: "power2.inOut" }, 50);
-masterTL.to(".layer-3d", { opacity: 0, filter: "blur(20px)", z: -1000, duration: 3, stagger: 0.1 }, 51);
-masterTL.to("#logo-payoff", { opacity: 1, scale: 1, z: 500, duration: 3, ease: "back.out(1.2)" }, 53);
-masterTL.to(neuralField.material, { size: 0.2, opacity: 0, duration: 5 }, 55);
+masterTL.to(".narrative-element", { opacity: 0, filter: "blur(20px)", scale: 0.9, duration: 3, ease: "power2.inOut" }, 51);
+masterTL.to("#logo-payoff", { opacity: 1, scale: 1, duration: 3, ease: "back.out(1.2)" }, 53);
+masterTL.to(lines.slice(0, 12), { attr: { x1: 600, y1: 400, x2: 600, y2: 400 }, opacity: 0, duration: 2 }, 52);
