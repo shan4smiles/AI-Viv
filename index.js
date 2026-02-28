@@ -18,20 +18,45 @@ class Particle {
     init() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2;
-        this.vx = Math.random() * 0.2 - 0.1;
-        this.vy = Math.random() * 0.2 - 0.1;
+        // Very short vertical dash length
+        this.length = 8 + Math.random() * 15; // 8-23px
+        this.width = 2;
+        // Slow downward drift only
+        this.vy = 0.5 + Math.random() * 0.8; // 0.5-1.3px per frame
+        // Much more visible opacity
+        this.opacity = 0.25 + Math.random() * 0.25; // 0.25-0.50
+        // Strong glow
+        this.glow = 6 + Math.random() * 8; // 6-14px blur
     }
     update() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x > canvas.width) this.x = 0; if (this.y > canvas.height) this.y = 0;
+        this.y += this.vy;
+        // Seamless loop: restart at top when off bottom
+        if (this.y > canvas.height + this.length) {
+            this.y = -this.length;
+            this.x = Math.random() * canvas.width;
+        }
     }
     draw() {
-        ctx.fillStyle = 'rgba(0, 242, 255, 0.2)';
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        // Motion blur effect with stronger glow
+        ctx.shadowBlur = this.glow;
+        ctx.shadowColor = `rgba(0, 242, 255, ${this.opacity * 0.8})`;
+
+        // Draw vertical dash with bright cyan
+        ctx.strokeStyle = `rgba(0, 242, 255, ${this.opacity})`;
+        ctx.lineWidth = this.width;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.stroke();
+
+        // Reset shadow
+        ctx.shadowBlur = 0;
     }
 }
-for (let i = 0; i < 100; i++) particles.push(new Particle());
+// Particle count for visible effect
+for (let i = 0; i < 120; i++) particles.push(new Particle());
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => { p.update(); p.draw(); });
@@ -116,11 +141,11 @@ function initNarrative() {
         extraGrids.push(createGrid(container));
     }
 
-    // Building Windows (Distributed across 3 towers)
+    // Building Windows (Distributed across 3 towers - smaller and shifted right)
     const towers = [
-        { x: 250, y: 350, w: 100, h: 250 },
-        { x: 400, y: 250, w: 150, h: 350 },
-        { x: 600, y: 400, w: 150, h: 200 }
+        { x: 350, y: 400, w: 70, h: 200 },
+        { x: 450, y: 320, w: 120, h: 280 },
+        { x: 600, y: 420, w: 100, h: 180 }
     ];
     towers.forEach(t => {
         const cols = Math.floor(t.w / 25);
@@ -211,7 +236,7 @@ const masterTL = gsap.timeline({
     }
 });
 
-// TOTAL DURATION = 60 (for 6 sections)
+// TOTAL DURATION = 70 (for 7 sections)
 
 // --- NEW PART: Bring in extra grids from corners ---
 const corners = [
@@ -278,27 +303,31 @@ masterTL.to("#bot-card", { rotationX: 90, scaleY: 0.01, opacity: 0, duration: 1.
 masterTL.fromTo(".scanner-line", { opacity: 0, y: 200 }, { opacity: 1, y: 200, duration: 0.5 }, 37);
 masterTL.to("#building-group", { opacity: 1, duration: 0.5 }, 37.5);
 masterTL.to(".building-outline", { opacity: 1, strokeDashoffset: 0, stagger: 0.3, duration: 1.5, ease: "power2.inOut" }, 38);
-masterTL.to(".scanner-line", { y: 600, duration: 2, ease: "none" }, 38);
-masterTL.to(buildingWindows.children, { opacity: 0.8, stagger: { each: 0.01, from: "top" }, duration: 0.3 }, 39);
 
-// Phase 5: Value (Section 5: 40-50)
-masterTL.addLabel("value", 40);
-masterTL.to(".scanner-line", { opacity: 0, duration: 1 }, 41);
-masterTL.to("#building-group", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 41);
-// Shifted to the RIGHT (beside text)
-masterTL.fromTo("#report-group", { x: 0, opacity: 0, scale: 0.8 }, { x: 200, opacity: 1, scale: 1, duration: 2 }, 42);
-masterTL.to(".report-base", { opacity: 1, duration: 1 }, 43);
+// Phase 5: Utilization - Slow Building Scan (Section 5: 40-50)
+masterTL.addLabel("utilization", 40);
+masterTL.to(".scanner-line", { y: 600, duration: 8, ease: "none" }, 40);
+masterTL.to(buildingWindows.children, { opacity: 0.8, stagger: { each: 0.01, from: "top" }, duration: 6 }, 42);
 
-masterTL.to(".report-item", { attr: { height: (i) => 20 + Math.random() * 60, y: (i) => 370 - (20 + Math.random() * 60) }, stagger: 0.1, duration: 2 }, 44);
-masterTL.to("#report-pie", { scale: 1, duration: 1.5, ease: "back.out(1.7)" }, 45);
-masterTL.to(".pie-slice", { strokeDashoffset: 50, duration: 2, ease: "power2.inOut" }, 45);
-masterTL.to(".pipeline-node", { opacity: 1, scale: 1, stagger: 0.1, duration: 1 }, 46);
-masterTL.to(".pipeline-link", { opacity: 0.4, strokeDashoffset: 0, stagger: 0.1, duration: 1.5 }, 46);
-masterTL.to(".workflow-label", { opacity: 1, stagger: 0.05, duration: 1 }, 46);
-masterTL.to("#workflow-icons g", { opacity: 1, stagger: 0.2, duration: 1.5 }, 47);
+// Phase 6: Value (Section 6: 50-60)
+masterTL.addLabel("value", 50);
+masterTL.to(".scanner-line", { opacity: 0, duration: 1 }, 51);
+masterTL.to("#building-group", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 51);
+// Centered on screen
+masterTL.fromTo("#report-group", { x: 0, opacity: 0, scale: 0.8 }, { x: 0, opacity: 1, scale: 1, duration: 2 }, 52);
+masterTL.to(".report-base", { opacity: 1, duration: 1 }, 53);
 
-// Phase 6: Logo Payoff (Section 6: 50-60)
-masterTL.addLabel("logo", 50);
-masterTL.to(".narrative-element", { opacity: 0, filter: "blur(20px)", scale: 0.9, duration: 3, ease: "power2.inOut" }, 51);
-masterTL.to("#logo-payoff", { opacity: 1, scale: 1, duration: 3, ease: "back.out(1.2)" }, 53);
-masterTL.to(lines.slice(0, 12), { attr: { x1: 600, y1: 400, x2: 600, y2: 400 }, opacity: 0, duration: 2 }, 52);
+masterTL.to(".report-item", { attr: { height: (i) => 20 + Math.random() * 60, y: (i) => 370 - (20 + Math.random() * 60) }, stagger: 0.1, duration: 2 }, 54);
+masterTL.to("#report-pie", { scale: 1, duration: 1.5, ease: "back.out(1.7)" }, 55);
+masterTL.to(".pie-slice", { strokeDashoffset: 50, duration: 2, ease: "power2.inOut" }, 55);
+masterTL.to(".pipeline-node", { opacity: 1, scale: 1, stagger: 0.1, duration: 1 }, 56);
+masterTL.to(".pipeline-link", { opacity: 0.4, strokeDashoffset: 0, stagger: 0.1, duration: 1.5 }, 56);
+masterTL.to(".workflow-label", { opacity: 1, stagger: 0.05, duration: 1 }, 56);
+masterTL.to("#workflow-icons g", { opacity: 1, stagger: 0.2, duration: 1.5 }, 57);
+
+// Phase 7: Logo Payoff (Section 7: 60-70)
+masterTL.addLabel("logo", 60);
+masterTL.to(".narrative-element", { opacity: 0, filter: "blur(20px)", scale: 0.9, duration: 3, ease: "power2.inOut" }, 61);
+masterTL.to("#central-glow", { opacity: 0, scale: 1.5, duration: 3, ease: "power2.inOut" }, 61);
+masterTL.to("#logo-payoff", { opacity: 1, scale: 1, duration: 3, ease: "back.out(1.2)" }, 63);
+masterTL.to(lines.slice(0, 12), { attr: { x1: 600, y1: 400, x2: 600, y2: 400 }, opacity: 0, duration: 2 }, 62);
