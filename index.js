@@ -1,9 +1,20 @@
 // Setup Lenis
-const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+const lenis = new Lenis({
+    duration: 1.0,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+    smoothTouch: false
+});
 function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
 requestAnimationFrame(raf);
 
+// Connect Lenis to GSAP ScrollTrigger
+lenis.on('scroll', ScrollTrigger.update);
+
 gsap.registerPlugin(ScrollTrigger);
+
+// Sync GSAP ticker with requestAnimationFrame
+gsap.ticker.lagSmoothing(0);
 
 // Particle Canvas (Simplified background)
 const canvas = document.getElementById('particle-canvas');
@@ -229,10 +240,13 @@ function initNarrative() {
 initNarrative();
 
 // --- Main GSAP Timeline ---
-// --- Main GSAP Timeline ---
 const masterTL = gsap.timeline({
     scrollTrigger: {
-        trigger: ".story-content", start: "top top", end: "bottom bottom", scrub: 1
+        trigger: ".story-content",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.5,
+        invalidateOnRefresh: true
     }
 });
 
@@ -255,7 +269,7 @@ masterTL.to(lines.slice(0, 3), {
     },
     duration: 8,
     ease: "power2.inOut"
-}, 1);
+}, 0);
 
 // Phase 2: Chaos (Section 2: 10-20)
 masterTL.addLabel("chaos", 10);
@@ -266,28 +280,30 @@ masterTL.to(lines, {
     },
     opacity: 0.6,
     stagger: 0.01,
-    duration: 8,
-    ease: "none"
-}, 11);
+    duration: 9,
+    ease: "power1.inOut"
+}, 10);
 
 // Phase 3: Structure (Section 3: 20-30)
 masterTL.addLabel("structure", 20);
 masterTL.to(lines.slice(0, 6), {
     attr: { x1: 350, y1: (i) => 250 + i * 60, x2: 650, y2: (i) => 250 + i * 60 },
-    duration: 3
-}, 21);
+    duration: 3,
+    ease: "power2.out"
+}, 20);
 masterTL.to(lines.slice(6, 12), {
     attr: { x1: (i) => 350 + i * 60, y1: 250, x2: (i) => 350 + i * 60, y2: 550 },
-    duration: 3
-}, 21);
-masterTL.to(lines.slice(12), { opacity: 0, duration: 1 }, 21);
-masterTL.to(nodes, { opacity: 0.8, stagger: 0.01, duration: 3 }, 24);
+    duration: 3,
+    ease: "power2.out"
+}, 20);
+masterTL.to(lines.slice(12), { opacity: 0, duration: 1.5, ease: "power2.out" }, 20);
+masterTL.to(nodes, { opacity: 0.8, stagger: 0.01, duration: 4, ease: "power2.out" }, 22);
 
 extraGrids.forEach((grid, i) => {
     masterTL.fromTo(grid.container,
         { x: corners[i].x, y: corners[i].y, opacity: 0, scale: 0.5, rotation: 45 },
-        { x: 0, y: 0, opacity: 0.5, scale: 1, rotation: 0, duration: 4, ease: "power2.out" },
-        24 + i * 0.5
+        { x: 0, y: 0, opacity: 0.5, scale: 1, rotation: 0, duration: 5, ease: "power2.out" },
+        22 + i * 0.4
     );
 });
 
@@ -295,11 +311,11 @@ extraGrids.forEach((grid, i) => {
 masterTL.addLabel("agent", 30);
 masterTL.to([nodes, lines.slice(0, 12), "#line-system", "[id^='grid-layer-']", ".node-square", "#chip-group"], {
     opacity: 0, scale: 0.8, duration: 2, ease: "power2.inOut"
-}, 31);
-masterTL.to("#bot-card", { opacity: 1, scale: 1, duration: 2, ease: "power2.out" }, 32);
-masterTL.from(".bot-eye, .bot-pupil, .bot-mouth", { opacity: 0, scale: 0.8, stagger: 0.2, duration: 2 }, 33);
+}, 30);
+masterTL.to("#bot-card", { opacity: 1, scale: 1, duration: 2.5, ease: "power2.out" }, 31);
+masterTL.from(".bot-eye, .bot-pupil, .bot-mouth", { opacity: 0, scale: 0.8, stagger: 0.2, duration: 2 }, 32);
 
-masterTL.to("#bot-card", { rotationX: 90, scaleY: 0.01, opacity: 0, duration: 1.5, ease: "power2.inOut" }, 36);
+masterTL.to("#bot-card", { rotationX: 90, scaleY: 0.01, opacity: 0, duration: 2, ease: "power2.inOut" }, 36);
 masterTL.fromTo(".scanner-line", { opacity: 0, y: 200 }, { opacity: 1, y: 200, duration: 0.5 }, 37);
 masterTL.to("#building-group", { opacity: 1, duration: 0.5 }, 37.5);
 masterTL.to(".building-outline", { opacity: 1, strokeDashoffset: 0, stagger: 0.3, duration: 1.5, ease: "power2.inOut" }, 38);
@@ -311,23 +327,23 @@ masterTL.to(buildingWindows.children, { opacity: 0.8, stagger: { each: 0.01, fro
 
 // Phase 6: Value (Section 6: 50-60)
 masterTL.addLabel("value", 50);
-masterTL.to(".scanner-line", { opacity: 0, duration: 1 }, 51);
-masterTL.to("#building-group", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 51);
+masterTL.to(".scanner-line", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 50);
+masterTL.to("#building-group", { opacity: 0, duration: 2, ease: "power2.inOut" }, 50);
 // Centered on screen
-masterTL.fromTo("#report-group", { x: 0, opacity: 0, scale: 0.8 }, { x: 0, opacity: 1, scale: 1, duration: 2 }, 52);
-masterTL.to(".report-base", { opacity: 1, duration: 1 }, 53);
+masterTL.fromTo("#report-group", { x: 0, opacity: 0, scale: 0.8 }, { x: 0, opacity: 1, scale: 1, duration: 2.5, ease: "power2.out" }, 51);
+masterTL.to(".report-base", { opacity: 1, duration: 1.5 }, 52);
 
-masterTL.to(".report-item", { attr: { height: (i) => 20 + Math.random() * 60, y: (i) => 370 - (20 + Math.random() * 60) }, stagger: 0.1, duration: 2 }, 54);
-masterTL.to("#report-pie", { scale: 1, duration: 1.5, ease: "back.out(1.7)" }, 55);
-masterTL.to(".pie-slice", { strokeDashoffset: 50, duration: 2, ease: "power2.inOut" }, 55);
-masterTL.to(".pipeline-node", { opacity: 1, scale: 1, stagger: 0.1, duration: 1 }, 56);
-masterTL.to(".pipeline-link", { opacity: 0.4, strokeDashoffset: 0, stagger: 0.1, duration: 1.5 }, 56);
-masterTL.to(".workflow-label", { opacity: 1, stagger: 0.05, duration: 1 }, 56);
-masterTL.to("#workflow-icons g", { opacity: 1, stagger: 0.2, duration: 1.5 }, 57);
+masterTL.to(".report-item", { attr: { height: (i) => 20 + Math.random() * 60, y: (i) => 370 - (20 + Math.random() * 60) }, stagger: 0.1, duration: 2, ease: "power2.out" }, 53);
+masterTL.to("#report-pie", { scale: 1, duration: 2, ease: "back.out(1.7)" }, 54);
+masterTL.to(".pie-slice", { strokeDashoffset: 50, duration: 2, ease: "power2.inOut" }, 54);
+masterTL.to(".pipeline-node", { opacity: 1, scale: 1, stagger: 0.1, duration: 1.5, ease: "power2.out" }, 55);
+masterTL.to(".pipeline-link", { opacity: 0.4, strokeDashoffset: 0, stagger: 0.1, duration: 1.5, ease: "power2.out" }, 55);
+masterTL.to(".workflow-label", { opacity: 1, stagger: 0.05, duration: 1.5 }, 55);
+masterTL.to("#workflow-icons g", { opacity: 1, stagger: 0.2, duration: 2, ease: "power2.out" }, 56);
 
 // Phase 7: Logo Payoff (Section 7: 60-70)
 masterTL.addLabel("logo", 60);
-masterTL.to(".narrative-element", { opacity: 0, filter: "blur(20px)", scale: 0.9, duration: 3, ease: "power2.inOut" }, 61);
-masterTL.to("#central-glow", { opacity: 0, scale: 1.5, duration: 3, ease: "power2.inOut" }, 61);
-masterTL.to("#logo-payoff", { opacity: 1, scale: 1, duration: 3, ease: "back.out(1.2)" }, 63);
-masterTL.to(lines.slice(0, 12), { attr: { x1: 600, y1: 400, x2: 600, y2: 400 }, opacity: 0, duration: 2 }, 62);
+masterTL.to(".narrative-element", { opacity: 0, filter: "blur(20px)", scale: 0.9, duration: 4, ease: "power2.inOut" }, 60);
+masterTL.to("#central-glow", { opacity: 0, scale: 1.5, duration: 4, ease: "power2.inOut" }, 60);
+masterTL.to(lines.slice(0, 12), { attr: { x1: 600, y1: 400, x2: 600, y2: 400 }, opacity: 0, duration: 3, ease: "power2.inOut" }, 60);
+masterTL.to("#logo-payoff", { opacity: 1, scale: 1, duration: 4, ease: "back.out(1.2)" }, 62);
