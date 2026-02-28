@@ -136,11 +136,13 @@ body::after {
     fill: none;
     stroke: var(--accent-blue);
     stroke-width: 2;
+    opacity: 1;
 }
 
 .bot-pupil {
     fill: var(--accent-blue);
     filter: drop-shadow(0 0 10px var(--accent-blue));
+    opacity: 1;
 }
 
 .bot-mouth {
@@ -148,6 +150,7 @@ body::after {
     stroke: var(--accent-blue);
     stroke-width: 3;
     stroke-linecap: round;
+    opacity: 1;
 }
 
 #card-inner-scan {
@@ -275,4 +278,82 @@ p {
 .final-reveal h2 {
     font-size: 3rem;
     margin-bottom: 1rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .story-section {
+        padding-left: 5%;
+        padding-right: 5%;
+        justify-content: center;
+    }
+
+    .story-text {
+        max-width: 90%;
+        padding: 20px;
+        background: rgba(5, 7, 10, 0.9);
+        backdrop-filter: blur(30px);
+    }
+
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    p {
+        font-size: 0.85rem;
+    }
+
+    /* Scale down and shift visual canvas on mobile */
+    .visual-canvas {
+        transform: scale(0.5);
+        opacity: 0.3;
+        pointer-events: none;
+    }
+
+    #central-glow {
+        width: 400px;
+        height: 400px;
+        opacity: 0.6;
+    }
+
+    .final-brand-logo {
+        width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .story-text {
+        max-width: 95%;
+        padding: 16px;
+    }
+
+    h1 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    /* Further reduce visual impact on small phones */
+    .visual-canvas {
+        transform: scale(0.35);
+        opacity: 0.2;
+    }
+
+    #central-glow {
+        width: 300px;
+        height: 300px;
+        opacity: 0.4;
+    }
+
+    #particle-canvas {
+        opacity: 0.6;
+    }
+
+    .final-brand-logo {
+        width: 150px;
+    }
 }

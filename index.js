@@ -313,7 +313,11 @@ masterTL.to([nodes, lines.slice(0, 12), "#line-system", "[id^='grid-layer-']", "
     opacity: 0, scale: 0.8, duration: 2, ease: "power2.inOut"
 }, 30);
 masterTL.to("#bot-card", { opacity: 1, scale: 1, duration: 2.5, ease: "power2.out" }, 31);
-masterTL.from(".bot-eye, .bot-pupil, .bot-mouth", { opacity: 0, scale: 0.8, stagger: 0.2, duration: 2 }, 32);
+masterTL.fromTo(".bot-eye, .bot-pupil, .bot-mouth",
+    { opacity: 0, scale: 0 },
+    { opacity: 1, scale: 1, stagger: 0.15, duration: 1.5, ease: "back.out(1.7)" },
+    32
+);
 
 masterTL.to("#bot-card", { rotationX: 90, scaleY: 0.01, opacity: 0, duration: 2, ease: "power2.inOut" }, 36);
 masterTL.fromTo(".scanner-line", { opacity: 0, y: 200 }, { opacity: 1, y: 200, duration: 0.5 }, 37);
